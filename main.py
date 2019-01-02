@@ -1,6 +1,5 @@
 # coding:utf-8
 import sys
-import os
 import feedparser
 from requests_oauthlib import OAuth1Session
 import re
@@ -36,7 +35,7 @@ def text_from_twitter():
   args = sys.argv
   twitter_name = args[1]
   twitter = OAuth1Session(CK, CS, AT, ATS)
-  twitter_params ={'count' : 300}
+  twitter_params ={'count' : 100}
   url = "https://api.twitter.com/1.1/statuses/user_timeline.json?screen_name=" + twitter_name
   res = twitter.get(url, params = twitter_params)
 
@@ -49,11 +48,11 @@ def text_from_twitter():
   return combined_text
 
 def model_from_text(text):
-  words = []
+  sentences = []
   m = MeCab.Tagger("-Ochasen")
   m.parse("")
-  node = m.parseToNode(text)
-
+  result = m.parse(text).split("\n")
+  
   breaking_chars = [
       '(',
       ')',
@@ -68,18 +67,19 @@ def model_from_text(text):
   ]
 
   sentence = ""
-  while node:
-      if node.surface not in breaking_chars:
-        sentence += node.surface
-      if node.surface != '。' and node.surface != '、':
+  for item in result:
+      str = item.split("\t")
+      if str[0] not in breaking_chars:
+        sentence += str[0]
+      if str[0] != '。' and str[0] != '、':
         sentence += ' '
-      if node.surface == '。':
-        words.append(sentence + '\n')
+      if str[0] == '。':
+        sentences.append(sentence + '\n')
         sentence = ""
-      node = node.next
+  
+  random.shuffle(sentences)
+  text = ''.join(sentences)
 
-  random.shuffle(words)
-  text = ''.join(words)
   text_model = markovify.NewlineText(text, state_size=2)
 
   return text_model
