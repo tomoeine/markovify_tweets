@@ -1,4 +1,5 @@
 # coding:utf-8
+from flask import Flask, jsonify, abort, make_response
 import sys
 import feedparser
 from requests_oauthlib import OAuth1Session
@@ -29,11 +30,10 @@ def text_from_hotentry():
 
   return combined_text
 
-def text_from_twitter():
+def text_from_twitter(twitter_name):
   combined_text = ""
 
   args = sys.argv
-  twitter_name = args[1]
   twitter = OAuth1Session(CK, CS, AT, ATS)
   twitter_params ={'count' : 100}
   url = "https://api.twitter.com/1.1/statuses/user_timeline.json?screen_name=" + twitter_name
@@ -84,17 +84,24 @@ def model_from_text(text):
 
   return text_model
 
-def main():
+api = Flask(__name__)
+
+@api.route('/markovify/<string:twitter_name>', methods=['GET'])
+def main(twitter_name):
   text = text_from_hotentry()
   hotentry_model = model_from_text(text)
 
-  text += text_from_twitter()
+  text += text_from_twitter(twitter_name)
   twitter_model = model_from_text(text)
   
   model = markovify.combine([ hotentry_model, twitter_model ], [ 3, 1 ])
 
+  result = []
   for i in range(3):
-      print(model.make_short_sentence(60).replace(" ", ""))
+      result.append(model.make_short_sentence(60).replace(" ", ""))
+
+  # return make_response(jsonify(result))
+  return make_response(json.dumps(result, ensure_ascii=False))
 
 if __name__ == '__main__':
-  main()
+    api.run(host='0.0.0.0', port=3000)
