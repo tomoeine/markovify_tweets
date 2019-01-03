@@ -2,6 +2,7 @@
 from flask import Flask, request, session, g, redirect, url_for, \
      abort, render_template, flash
 import sys
+import os
 import feedparser
 from requests_oauthlib import OAuth1Session
 import re
@@ -9,6 +10,7 @@ import MeCab
 import json, config
 import random
 import markovify
+from datetime import datetime
 
 RSS_URL = "http://feeds.feedburner.com/hatena/b/hotentry"
 
@@ -108,14 +110,24 @@ def index():
 # Show result
 @app.route('/show', methods=['POST'])
 def show():
-  twitter_name = request.form['twitter_name']
-  text = text_from_hotentry()
-  hotentry_model = model_from_text(text)
+  # ホットエントリーは１時間毎に保存しておく
+  file_name = 'hotentry_model-' + datetime.now().strftime("%Y%m%d%H") + '.json'
+  if os.path.isfile(file_name):
+    print("exist")
+    with open(file_name) as f:
+      hotentry_model = markovify.NewlineText.from_json(f.read())
+  else:
+    print("reget")
+    text = text_from_hotentry()
+    hotentry_model = model_from_text(text)
+    with open(file_name, 'w') as f:
+      f.write(hotentry_model.to_json())
 
-  text += text_from_twitter(twitter_name)
+  twitter_name = request.form['twitter_name']
+  text = text_from_twitter(twitter_name)
   twitter_model = model_from_text(text)
   
-  model = markovify.combine([ hotentry_model, twitter_model ], [ 3, 1 ])
+  model = markovify.combine([ hotentry_model, twitter_model ], [ 2, 1 ])
 
   result = []
   for i in range(3):
