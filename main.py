@@ -1,5 +1,6 @@
 # coding:utf-8
-from flask import Flask, jsonify, abort, make_response
+from flask import Flask, request, session, g, redirect, url_for, \
+     abort, render_template, flash
 import sys
 import feedparser
 from requests_oauthlib import OAuth1Session
@@ -80,14 +81,22 @@ def model_from_text(text):
   random.shuffle(sentences)
   text = ''.join(sentences)
 
-  text_model = markovify.NewlineText(text, state_size=2)
+  text_model = markovify.NewlineText(text, state_size=1)
 
   return text_model
 
-api = Flask(__name__)
+# create our little application :)
+app = Flask(__name__)
+app.config.from_object(__name__)
 
-@api.route('/markovify/<string:twitter_name>', methods=['GET'])
-def main(twitter_name):
+# Top
+@app.route('/')
+def index():
+  return render_template('index.html', results={})
+
+# Show result
+@app.route('/show/<string:twitter_name>', methods=['GET'])
+def show(twitter_name):
   text = text_from_hotentry()
   hotentry_model = model_from_text(text)
 
@@ -100,8 +109,7 @@ def main(twitter_name):
   for i in range(3):
       result.append(model.make_short_sentence(60).replace(" ", ""))
 
-  # return make_response(jsonify(result))
-  return make_response(json.dumps(result, ensure_ascii=False))
+  return render_template('view.html',  result=result, twitter_name=twitter_name)
 
 if __name__ == '__main__':
-    api.run(host='0.0.0.0', port=3000)
+    app.run(host='0.0.0.0', port=3000)
