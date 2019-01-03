@@ -24,11 +24,15 @@ def text_from_hotentry():
 
   p = re.compile(r"<[^>]*?>")
   for entry in dic.entries:
-    title = re.sub("( \| | \- |:).+", "", entry.title)
+    title = re.sub("( \| | \- |:|：).+", "", entry.title)
     title = re.sub("（.+）$", "", title)
     combined_text += title + "。"
-    combined_text += re.sub(r"<[^>]*?>", "", entry.content[0].value)
+    content = re.sub(r"<[^>]*?>", "。", entry.content[0].value)
+    content = re.sub("( \| |\｜| \- |:).+。", "。", content)
+    content = re.sub("。([一-龥ぁ-んァ-ンＡ－Ｚ]|【|】|ー|\s|、|「|」)+(\.\.\.|…)", "", content)
+    combined_text += content
 
+  combined_text = re.sub("(。| )+。", "。", combined_text)
   return combined_text
 
 def text_from_twitter(twitter_name):
@@ -36,7 +40,7 @@ def text_from_twitter(twitter_name):
 
   args = sys.argv
   twitter = OAuth1Session(CK, CS, AT, ATS)
-  twitter_params ={'count' : 100}
+  twitter_params ={'count' : 200}
   url = "https://api.twitter.com/1.1/statuses/user_timeline.json?screen_name=" + twitter_name
   res = twitter.get(url, params = twitter_params)
 
@@ -65,6 +69,8 @@ def model_from_text(text):
       "」",
       "『",
       "』",
+      "（",
+      "）",
   ]
 
   sentence = ""
@@ -72,6 +78,8 @@ def model_from_text(text):
       str = item.split("\t")
       if str[0] not in breaking_chars:
         sentence += str[0]
+      else:
+        sentence += '、'
       if str[0] != '。' and str[0] != '、':
         sentence += ' '
       if str[0] == '。':
