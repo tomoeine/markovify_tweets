@@ -95,8 +95,9 @@ def index():
   return render_template('index.html', results={})
 
 # Show result
-@app.route('/show/<string:twitter_name>', methods=['GET'])
-def show(twitter_name):
+@app.route('/show', methods=['POST'])
+def show():
+  twitter_name = request.form['twitter_name']
   text = text_from_hotentry()
   hotentry_model = model_from_text(text)
 
@@ -109,7 +110,7 @@ def show(twitter_name):
   for i in range(3):
       result.append(model.make_short_sentence(60).replace(" ", ""))
 
-  return render_template('view.html',  result=result, twitter_name=twitter_name)
+  return render_template('show.html',  result=result, twitter_name=twitter_name)
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=3000)

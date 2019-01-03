@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block body %}
+<h1>あなたっぽいつぶやきジェネレータ</h1>
+<form action="{{ url_for('show') }}" method="POST">
+    <div class="input-group mb-3">
+        <div class="input-group-prepend">
+            <span class="input-group-text" id="basic-addon1">@</span>
+        </div>
+        <input name="twitter_name" id="twitter_name" type="text" class="form-control" 
+            placeholder="Twitterのユーザー名" aria-label="Username" aria-describedby="basic-addon1">
+    </div>
+    <button type="submit" id="analyze" class="btn btn-info">つぶやきを生成する</button>
+</form>
+ 
+{% endblock %}

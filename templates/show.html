@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block body %}
+<h1>{{ twitter_name }}さんっぽいつぶやき</h1>
+<ul class="list-group list-group-flush">
+      {% for v in result %}
+        <li class="list-group-item">
+          {{ v }}<br>
+          <a href="https://twitter.com/share?ref_src=twsrc%5Etfw" class="twitter-share-button" 
+            data-size="large" data-text="{{ v }}%0a" data-hashtags="あなたっぽいつぶやき" data-lang="ja" 
+            data-show-count="false">これをツイート</a><script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>        </li>
+      {% endfor %}
+</ul>
+{% endblock %}
