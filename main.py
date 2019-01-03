@@ -50,6 +50,7 @@ def text_from_twitter(twitter_name):
           text = re.sub("https?://[\w/:%#\$&\?\(\)~\.=\+\-]+", "", line['text']) + "\n"
           combined_text += re.sub("@[\w]+", "", text) + "。"
 
+  combined_text = re.sub("(\r|\n)", "", combined_text)
   return combined_text
 
 def model_from_text(text):
@@ -71,6 +72,8 @@ def model_from_text(text):
       "』",
       "（",
       "）",
+      "【",
+      "】",
   ]
 
   sentence = ""
@@ -79,7 +82,7 @@ def model_from_text(text):
       if str[0] not in breaking_chars:
         sentence += str[0]
       else:
-        sentence += '、'
+        sentence += ' '
       if str[0] != '。' and str[0] != '、':
         sentence += ' '
       if str[0] == '。':
